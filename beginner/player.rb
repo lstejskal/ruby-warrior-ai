@@ -7,7 +7,7 @@ class Player
 
   @@health = MAX_HEALTH
 
-  @@direction = nil
+  @@direction = :forward
 
   @@ahead = []
 
@@ -16,17 +16,22 @@ class Player
   def play_turn(warrior)
     display_info(warrior)
 
-    @@direction ||= :forward
+    direction = find_most_dangerous_enemy(warrior)
 
     @@ahead = warrior.look(@@direction)
 
-    if warrior.feel(@@direction).wall?
+    # if the most dangerous enemy is in opposite direction
+    if direction != @@direction
+      warrior.pivot!
+
+    elsif warrior.feel(@@direction).wall?
       warrior.pivot!
 
     elsif captives_ahead?(warrior)
       rescue_or_advance!(warrior)
 
-    elsif seriously_injured?(warrior)
+    elsif seriously_injured?(warrior) and not %w{ Wizard Archer }.include? nearest_enemy( warrior, @@direction ).to_s
+
       taking_damage?(warrior) ? retreat!(warrior) : warrior.rest!
 
     elsif injured?(warrior) and not taking_damage?(warrior)
@@ -58,6 +63,20 @@ class Player
     end
   end
 
+  # ends with exclamation mark because it can change direction
+  def find_most_dangerous_enemy(warrior)
+    # archers or wizards in any direction?
+    if %w{ Wizard Archer }.include? nearest_enemy( warrior, opposite_direction() ).to_s
+      opposite_direction()
+    elsif %w{ Wizard Archer }.include? nearest_enemy( warrior, @@direction ).to_s
+      @@direction
+    elsif enemies_ahead?( warrior, opposite_direction() )
+      opposite_direction()
+    else
+      @@direction      
+    end
+  end
+
   def injured?(warrior)
     warrior.health < MAX_HEALTH
   end
@@ -84,20 +103,29 @@ class Player
   end
 
   def retreat!(warrior)
-    warrior.walk!(@@direction == :forward ? :backward : :forward)
+    warrior.walk!( opposite_direction() )
   end
 
-  def nearest_occupied_space()
-    @@ahead.each do |space| 
+  def opposite_direction()
+    (@@direction == :forward) ? :backward : :forward
+  end
+
+  def nearest_occupied_space(spaces = @@ahead)
+    spaces.each do |space| 
       return space if (! space.empty?) && (! space.wall?)
     end
 
     nil
   end
 
+  def nearest_enemy(warrior, direction = @@direction)
+    space = nearest_occupied_space( warrior.look(direction) )
+    (space && space.enemy?) ? space : nil
+  end
+
   # is there enemy up to 3 spaces ahead of warrior?
-  def enemies_ahead?(warrior)
-    nearest_occupied_space() && nearest_occupied_space().enemy?
+  def enemies_ahead?(warrior, direction = @@direction)
+    not nearest_enemy(warrior, direction).nil?
   end
 
   # is there an enemy in front of warrior?
