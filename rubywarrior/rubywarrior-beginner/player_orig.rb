@@ -11,8 +11,6 @@ class Player
 
   @@ahead = []
 
-  # REFACTOR to player instance 
-
   def play_turn(warrior)
     display_info(warrior)
 
@@ -45,8 +43,12 @@ class Player
     @@health += health_change(warrior)
   end
 
+  def actual_health(warrior)
+    warrior.respond_to?(:health) ? warrior.health : MAX_HEALTH
+  end
+
   def display_info(warrior)
-    puts "Health: %s (%s)" % [ warrior.health, health_change(warrior, "display_as_string") ]
+    puts "Health: %s (%s)" % [ actual_health(warrior), health_change(warrior, "display_as_string") ]
   end
 
   def rescue_or_advance!(warrior)
@@ -78,18 +80,18 @@ class Player
   end
 
   def injured?(warrior)
-    warrior.health < MAX_HEALTH
+    actual_health(warrior) < MAX_HEALTH
   end
 
   def seriously_injured?(warrior)
-    warrior.health <= BAD_HEALTH
+    actual_health(warrior) <= BAD_HEALTH
   end
 
   # shows how health changed between turns
   # as_string - add "+" prefix to values > 0
   #
   def health_change(warrior, as_string = false)
-    result = warrior.health - @@health
+    result = actual_health(warrior) - @@health
 
     if as_string
       "%s%s" % [ ("+" if result > 0), result ]
