@@ -1,6 +1,8 @@
 
 class Player
 
+  MAX_HEALTH = 20
+
   def initialize()
   end
 
@@ -8,7 +10,11 @@ class Player
     @warrior = warrior
 
     if @warrior.feel.empty?
-      @warrior.walk!
+      if @warrior.health < MAX_HEALTH
+        @warrior.rest!
+      else
+        @warrior.walk!
+      end
     else
       @warrior.attack!
     end
