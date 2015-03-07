@@ -26,6 +26,8 @@ class Player
       else
         @warrior.walk!
       end
+    when @space_forward.wall?
+      @warrior.pivot!
     when @space_forward.captive?
       @warrior.rescue!
     else
