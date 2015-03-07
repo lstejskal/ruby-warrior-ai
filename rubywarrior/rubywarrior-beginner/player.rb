@@ -5,6 +5,8 @@ class Player
   CRITICAL_HEALTH = 5
 
   def initialize()
+    @warrior = nil
+    @enemy = nil
     @health_previous_turn ||= MAX_HEALTH
   end
 
@@ -15,7 +17,7 @@ class Player
     @space_forward = @spaces_forward.first
 
     case
-    when enemy_ahead?
+    when enemy_ahead? && long_distance_enemy?
       @warrior.shoot!
     when @space_forward.empty?
       if taking_damage?
@@ -61,7 +63,16 @@ class Player
   def enemy_ahead?
     space = first_nonempty_space
 
-    space && space.enemy?
+    if space && space.enemy?
+      @enemy = space
+      true
+    else
+      false
+    end
+  end
+
+  def long_distance_enemy?
+    %w{ Wizard Archer }.include? @enemy.to_s
   end
 
   def first_nonempty_space
