@@ -1,7 +1,8 @@
 
 class Player
 
-  MAX_HEALTH = 20
+  MAX_HEALTH      = 20
+  CRITICAL_HEALTH = 5
 
   def initialize()
     @health_previous_turn ||= MAX_HEALTH
@@ -14,7 +15,13 @@ class Player
 
     case
     when @space_forward.empty?
-      if injured? and not taking_damage?
+      if taking_damage?
+        if seriously_injured?
+          retreat!
+        else
+          @warrior.walk!
+        end
+      elsif injured?
         @warrior.rest!
       else
         @warrior.walk!
@@ -30,6 +37,10 @@ class Player
 
   def injured?
     @warrior.health < MAX_HEALTH
+  end
+
+  def seriously_injured?
+    @warrior.health < CRITICAL_HEALTH
   end
 
   def taking_damage?
