@@ -10,12 +10,17 @@ class Player
   def play_turn(warrior)
     @warrior = warrior
 
-    if @warrior.feel.empty?
+    @space_forward = @warrior.feel
+
+    case
+    when @space_forward.empty?
       if injured? and not taking_damage?
         @warrior.rest!
       else
         @warrior.walk!
       end
+    when @space_forward.captive?
+      @warrior.rescue!
     else
       @warrior.attack!
     end
