@@ -1,8 +1,8 @@
 
 class Player
 
-  MAX_HEALTH      = 20
-  CRITICAL_HEALTH = 5
+  MAX_HEALTH      ||= 20
+  CRITICAL_HEALTH ||= 5
 
   def initialize()
     @warrior = nil
@@ -26,7 +26,7 @@ class Player
         else
           @warrior.walk!
         end
-      elsif injured?
+      elsif injured? && !stairs_ahead?
         @warrior.rest!
       else
         @warrior.walk!
@@ -69,6 +69,12 @@ class Player
     else
       false
     end
+  end
+
+  def stairs_ahead?
+    space = first_nonempty_space
+
+    space && space.stairs?
   end
 
   def long_distance_enemy?
