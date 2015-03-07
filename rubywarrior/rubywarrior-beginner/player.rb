@@ -11,9 +11,12 @@ class Player
   def play_turn(warrior)
     @warrior = warrior
 
-    @space_forward = @warrior.feel
+    @spaces_forward = @warrior.look
+    @space_forward = @spaces_forward.first
 
     case
+    when enemy_ahead?
+      @warrior.shoot!
     when @space_forward.empty?
       if taking_damage?
         if seriously_injured?
@@ -51,6 +54,23 @@ class Player
 
   def retreat!
     @warrior.walk!(:backward)
+  end
+
+  private
+
+  def enemy_ahead?
+    space = first_nonempty_space
+
+    space && space.enemy?
+  end
+
+  def first_nonempty_space
+    @spaces_forward.each do |s| 
+      next if s.empty?
+      return s
+    end
+
+    nil
   end
 
 end
